@@ -1,0 +1,136 @@
+﻿/// This program takes upto 8 inputs from user and returns Maximum and Minimum value respectively
+/// It uses formula 1/2((a+b)+|a-b|) to find max value between two numbers
+/// and 1/2((a+b)-|a-b|) to find min value between two numbers
+
+org 100
+// counterCheck keep track of number of inputs to take i.e, 8 inputs
+counterCheck, 	load COUNTER /initially COUNTER value is 9	
+				subt ONE 	/decrease COUNTER value by 1 
+        		store COUNTER
+                skipcond 400 	/check if COUNTER value equals to 0 
+				Jump userInput 	/if not AC value 0 
+            
+        	/if counter value becomes 0 output MAX and MIN value and halt the program   
+                Load MAX
+                output
+                LOAD MIN
+                output
+                Jump end 	
+                
+// takes value from user
+userInput, 		input	/take input from user
+				store a
+                Jump findMax /first check if the user feed value is MAX value
+        
+//finding max value using formula 1/2((a+b)+|a-b|)
+findMax, 		load MAX
+				add a
+            	store temp1 /(a+b)
+            	load MAX
+            	subt a
+            	store temp2 /(a-b)
+            	skipcond 800 /skip if positive
+            	JnS Absolute /if (a-b) is negative find its absolute value
+				load temp1
+				add temp2 /(a+b)+(a-b)
+            	store dividend    	
+            	JnS Divide /1/2((a+b)+(a-b))
+            	load target
+            	store MAX  /store maximum value in MAX variable
+            	
+            /check if user entered value is maximum than value of MAX
+ 			/if it is maximum, no need to check whether user feed value is minimum
+            	subt a /MAX - a(user feed value)
+            	skipcond 400 	/jump if ac = 0 ie user feed value is max
+            	Jump findMin /else check if it is minimum
+            	jump counterCheck            
+
+/finding min value using formula 1/2((a+b)-|a-b|)
+findMin,		load MIN
+				add a
+            	store temp1 /(a+b)
+            	load MIN
+            	subt a  
+            	store temp2 /(a-b)
+            	skipcond 800 /skip if positive
+            	JnS Absolute
+				load temp1
+				subt temp2 
+            	store dividend /((a+b)-|a-b|)
+            	JnS Divide /1/2((a+b)-|a-b|)
+           	 	load target 
+            	store MIN / store minimum value in MIN variable
+            	jump counterCheck
+
+// finding absolute value (converting negative value to positive)					
+Absolute,		hex 0
+				load ZERO
+				subt temp2 / 0 - negative_number
+           		store temp2
+            	jumpI Absolute
+
+// dividing by 2
+Divide,			hex 0
+            	skipcond 800 /check if user feed value is positive or negative
+				jump setFlag /if negative set flag
+                jump division
+
+setFlag,		load flag /initially flag is 1 (represent positive)
+				subt ONE / flag = 0 (represent negative)
+                store flag
+                load ZERO 
+                subt dividend /change dividend value negative to positive
+                store dividend
+				jump division
+
+//carry out division by subtraction            
+division,		load dividend  
+		    	subt TWO  /subtracting 2 
+				store dividend
+            	skipcond 800 /skip if AC positive		
+				Jump checkFlag /when division is complete check flag
+            /counts number of times subtraction is carried out
+                load quotient
+            	add ONE
+            	store quotient 
+            	jump division
+
+//check flag to know sign of user feed value             
+checkFlag,  	load flag
+				skipcond 400 /check if flag = 0 (ie, negative)
+                jump positive
+                add ONE
+                store flag
+              /change sign to negative   
+                load ZERO
+                subt quotient
+                store target                
+                jump resetQuotient
+
+// if flag is 0 (ie positive sign) 
+positive,		load quotient
+				store target
+                jump resetQuotient
+
+//reset quotient variable value after division is completed
+resetQuotient, 	load quotient
+            	subt quotient
+            	add ONE
+            	store quotient
+            	JumpI Divide
+     
+end, 			halt			
+
+COUNTER, 		dec 9
+ZERO, 			dec 0
+ONE, 			dec 1
+TWO, 			dec 2
+temp1, 			dec 0
+temp2, 			dec 0
+a, 				dec 0
+flag, 			dec 1
+dividend, 		dec 0
+quotient, 		dec 1
+target, 		dec 0
+MAX, 			dec -20 
+MIN, 			dec 20
